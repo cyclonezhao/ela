@@ -1,0 +1,31 @@
+/* index.css */
+#wordlist{
+	width:15%;
+	height:600px;
+	border:1px solid #666666;
+	display:none;
+}
+#wordtree{
+	width:15%;
+	height:600px;
+	border:1px solid #666666;
+	display:inline-block;
+}
+#showview{
+	width:80%;
+	height:600px;
+	border:1px solid #666666;
+	display:inline-block;
+	float:right;
+}
+#addview{
+	margin-top: 10px;
+}
+#frame{
+	width:100%;
+	height:100%;
+}
+
+#handleArea{
+	display: none;
+}
