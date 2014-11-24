@@ -1,3 +1,7 @@
+$(function(){
+
+var msgArea = $("#msgArea");
+
 var btn_add = $("#btn_add");
 var btn_updateRelation = $("#btn_updateRelation");
 
@@ -14,15 +18,16 @@ var _showWordlist = false;
 var frame_youdao = $('#frame');
 var span_relations = $('#relationWords');
 
+var listh = [], maxh = 10, curh = -1;
+var btn_back = $("#back"), btn_forward = $("#forward");
+
 var currentWord;
+var pauseKeyListen = false;
 
 var tree, list; 
 
 btn_add.on("click", function(e){
-	wordname.val("");
-	relations.val("");
-	wordname.attr("disabled", false);
-	showHandleArea(true, "add");
+	add_click();
 });
 btn_updateRelation.on("click", function(e){
 	if(currentWord){
@@ -31,7 +36,7 @@ btn_updateRelation.on("click", function(e){
 		wordname.val(currentWord);
 		relations.val(span_relations.data("relations"));
 	}else{
-		alert("Please select a word first!");
+		showinfo("Please select a word first!");
 	}
 });
 btn_cancel.on("click", function(e){
@@ -44,7 +49,7 @@ btn_submit.on("click", function(e){
 
 	if("add" == action){
 		if(!word){
-			alert("Word must be entered!");
+			showinfo("Word must be entered!");
 			return;
 		}
 
@@ -63,7 +68,7 @@ btn_submit.on("click", function(e){
 			}
 		}
 		if(exist){
-			alert("the word [" + word + "] was already existed!");
+			showinfo("the word [" + word + "] was already existed!");
 			return;
 		}
 		if(relateword){
@@ -74,7 +79,7 @@ btn_submit.on("click", function(e){
 			"name": word,
 			"relations": relateword
 		}, function(result){
-			alert("Added Successfully!");
+			showinfo("Added Successfully!");
 			handleArea.css("display", "none");
 			disableNav(false);
 			fillword();
@@ -89,7 +94,7 @@ btn_submit.on("click", function(e){
 			"name": word,
 			"relations": relateword
 		}, function(result){
-			alert("Updated Successfully!");
+			showinfo("Updated Successfully!");
 			wordname.attr("disabled", false);
 			showHandleArea(false);
 			fillRelation({"relations": relateword}, true);
@@ -99,11 +104,57 @@ btn_submit.on("click", function(e){
 	
 });
 
+btn_back.on("click", function(){
+	var word = backh();
+	if(word)
+		fillContent(word);
+});
+btn_forward.on("click", function(){
+	var word = forwardh();
+	if(word)
+		fillContent(word);
+});
+
+$("body").keyup(function(eventObj){
+	if(pauseKeyListen){
+		if(eventObj.keyCode == 27){ // ESC
+			showHandleArea(false);
+		}else if(eventObj.keyCode == 13){ // Enter
+			btn_submit.trigger("click");
+		}
+		return;
+	}
+	switch(eventObj.keyCode){
+		case 37: // left
+			btn_back.trigger("click");
+			break;
+		case 39: // right
+			btn_forward.trigger("click");
+			break;
+		case 65: // A
+			add_click();
+			wordname.focus();
+			break;
+	};
+});
+
+fillword(true);
+window.fillContenth = fillContenth;
+
+function add_click(){
+	wordname.val("");
+	relations.val("");
+	wordname.attr("disabled", false);
+	showHandleArea(true, "add");
+}
+
 function showHandleArea(isshow, action){
 	if(isshow){
+		pauseKeyListen = true;
 		handleArea.css("display", "block");
 		handleArea.data("action", action);
 	}else{
+		pauseKeyListen = false;
 		handleArea.css("display", "none");
 	}
 	disableNav(isshow);
@@ -113,7 +164,6 @@ function disableNav(disable){
 	btn_updateRelation.attr("disabled", disable);
 }
 
-fillword(true);
 
 function fillContent(word){
 	currentWord = word;
@@ -123,6 +173,9 @@ function fillContent(word){
 		fillRelation(result);
 	});
 	showHandleArea(false);
+	setTimeout(function(){
+		$("#btn_add").focus();
+	}, 1000);
 }
 
 function fillRelation(result, noteval){
@@ -182,11 +235,11 @@ function fillWordlist(result){
 }
 
 // generate word anchor which can query contents and relations of the word
-// by call [fillContent] function when user clicked
+// by call [fillContenth] function when user clicked
 function _genAnchor(word){
 	var html = [], jsStr;
 	jsStr = [
-		"'javascript:fillContent(",
+		"'javascript:fillContenth(",
 		'"', word, '"',
 		");'"
 	].join("");
@@ -236,6 +289,47 @@ function dochangeview(isShowlist){
 
 function clicktree(event, treeId, treeNode, clickFlag){
 	if(treeNode.level == 1 ){
-		fillContent(treeNode.name);
+		fillContenth(treeNode.name);
 	}
 }
+
+function fillContenth(word){
+	addh(word);
+	fillContent(word);
+}
+
+function addh(word){
+	listh.push(word);
+	curh++;
+	if(listh.length > maxh){
+		listh.shift();
+	}
+}
+function backh(){
+	if(curh <= 0){
+		showinfo("already reached the first one!");
+		return;
+	}else{
+		curh--;
+	}
+	
+	return listh[curh];
+}
+function forwardh(){
+	if(curh == listh.length-1){
+		showinfo("already reached the last one!");
+		return;
+	}else{
+		curh++;
+	}
+	
+	return listh[curh];
+}
+function showinfo(msg){
+	msgArea.html(msg);
+	msgArea.css("display", "block");
+	setTimeout(function(){
+		msgArea.css("display", "none");
+	}, 3000);
+}
+});

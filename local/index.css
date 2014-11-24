@@ -1,4 +1,11 @@
 /* index.css */
+#msgArea{
+	display: none;
+	margin-bottom: 10px;
+	color: red;
+	background-color:yellow;
+	text-align: center;
+}
 #wordlist{
 	width:15%;
 	height:600px;

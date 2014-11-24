@@ -4,9 +4,10 @@
 	<meta charset="utf8"/>
 	<link rel="stylesheet" type="text/css" href="local/index.css"/>
 	<link rel="stylesheet" type="text/css" href="local/zTreeStyle.css"/>
+	<script src="local/jquery-2.1.1.js"></script>
 </head>
 <body>
-	<div>
+	<div id="msgArea"></div>
 	<aside id="wordlist">wordlist</aside>
 	<aside id="wordtree" class="ztree">
 		<ul id="tree" class="ztree"></ul>
@@ -16,7 +17,6 @@
 		<iframe id="frame"></iframe>
 		<div><span>relation words: </span><span id="relationWords"></span></div>
 	</div>
-</div>
 
 	<nav>
 		<button id="btn_add">add</button>
@@ -31,7 +31,9 @@
 		<button id="btn_cancel">cancel</button>
 	</div>
 	
-	<script src="local/jquery-2.1.1.js"></script>
+	<button id="back">back</button>
+	<button id="forward">forward</button>
+
 	<script src="local/jquery.ztree.core-3.5.js"></script>
 	<script src="local/index.js"></script>
 </body>
