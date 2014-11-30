@@ -9,7 +9,8 @@
 <body>
 	<div id="msgArea"></div>
 	<aside id="wordlist">wordlist</aside>
-	<aside id="wordtree" class="ztree">
+	<aside id="wordtree">
+		<span id="wordcount"></span>
 		<ul id="tree" class="ztree"></ul>
 	</aside>
 	
@@ -20,7 +21,10 @@
 
 	<nav>
 		<button id="btn_add">add</button>
+		<button id="btn_search">search</button>
 		<button id="btn_updateRelation">update relation words</button>
+		<button id="back">back</button>
+		<button id="forward">forward</button>
 	</nav>
 	<div id="handleArea">
 		<label for="tx_name">name:</label>
@@ -31,8 +35,6 @@
 		<button id="btn_cancel">cancel</button>
 	</div>
 	
-	<button id="back">back</button>
-	<button id="forward">forward</button>
 
 	<script src="local/jquery.ztree.core-3.5.js"></script>
 	<script src="local/index.js"></script>

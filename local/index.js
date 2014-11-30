@@ -3,6 +3,7 @@ $(function(){
 var msgArea = $("#msgArea");
 
 var btn_add = $("#btn_add");
+var btn_search = $("#btn_search");
 var btn_updateRelation = $("#btn_updateRelation");
 
 var handleArea = $('#handleArea');
@@ -13,6 +14,8 @@ var btn_cancel = $("#btn_cancel");
 
 var wordlist = $('#wordlist');
 var wordtree = $('#wordtree');
+var span_wordcount = $('#wordcount');
+
 var _showWordlist = false;
 
 var frame_youdao = $('#frame');
@@ -29,12 +32,22 @@ var tree, list;
 btn_add.on("click", function(e){
 	add_click();
 });
+btn_search.on("click", function(e){
+	wordname.val("");
+	relations.val("");
+	wordname.attr("disabled", false);
+	relations.attr("disabled", true);
+	showHandleArea(true, "search");
+	wordname.focus();
+});
 btn_updateRelation.on("click", function(e){
 	if(currentWord){
 		showHandleArea(true, "updateRelation");
 		wordname.attr("disabled", true);
+		relations.attr("disabled", false);
 		wordname.val(currentWord);
 		relations.val(span_relations.data("relations"));
+		relations.focus();
 	}else{
 		showinfo("Please select a word first!");
 	}
@@ -83,6 +96,7 @@ btn_submit.on("click", function(e){
 			handleArea.css("display", "none");
 			disableNav(false);
 			fillword();
+			fillContenth(word);
 		});	
 	} else if ("updateRelation" == action){
 
@@ -97,8 +111,11 @@ btn_submit.on("click", function(e){
 			showinfo("Updated Successfully!");
 			wordname.attr("disabled", false);
 			showHandleArea(false);
+			fillword();
 			fillRelation({"relations": relateword}, true);
 		});	
+	} else if("search" === action){
+		fillContenth(word);
 	}
 	
 	
@@ -135,11 +152,18 @@ $("body").keyup(function(eventObj){
 			add_click();
 			wordname.focus();
 			break;
+		case 83: // S
+			btn_search.trigger("click");
+			break;
 	};
 });
 
 fillword(true);
 window.fillContenth = fillContenth;
+
+frame_youdao.on('load', function(){
+	btn_add.focus();
+});
 
 function add_click(){
 	wordname.val("");
@@ -173,10 +197,8 @@ function fillContent(word){
 		fillRelation(result);
 	});
 	showHandleArea(false);
-	setTimeout(function(){
-		$("#btn_add").focus();
-	}, 1000);
 }
+
 
 function fillRelation(result, noteval){
 	var notnull = true;
@@ -260,8 +282,10 @@ function fillWordtree(result){
 			onClick: clicktree
 		}
 	};
-	var zNodes = [], one, date;
-	for(var i = 0, len = result.length; i < len; i++){
+	var zNodes = [], one, relation, date;
+	var i, len, j, len_j;
+	var wordcount = 0, relationCount = 0;
+	for(i = 0, len = result.length; i < len; i++){
 		one = result[i];
 		if(!date || date != (new Date(one.createDate)).toLocaleDateString()){
 			date = (new Date(one.createDate)).toLocaleDateString();
@@ -276,9 +300,26 @@ function fillWordtree(result){
 			pId: date,
 			name: one.name
 		});
+		wordcount++;
+		if(one.relations){
+			one.relations = one.relations.split(",");
+			for(j = 0, len_j = one.relations.length; j < len_j; j++){
+				relation = one.relations[j];
+				zNodes.push({
+					id: one._id + "-" + relation,
+					pId: one._id,
+					name: relation
+				});
+				relationCount++;
+			}
+		}
 	}
 	$.fn.zTree.init($("#tree"), setting, zNodes);
 	tree = $.fn.zTree.getZTreeObj("tree");
+	span_wordcount.html([
+		"词汇数量：", wordcount,
+		"；相关词数量：", relationCount
+	].join(""));
 }
 
 function dochangeview(isShowlist){
@@ -288,7 +329,7 @@ function dochangeview(isShowlist){
 }
 
 function clicktree(event, treeId, treeNode, clickFlag){
-	if(treeNode.level == 1 ){
+	if(treeNode.level >= 1 ){
 		fillContenth(treeNode.name);
 	}
 }
@@ -299,11 +340,19 @@ function fillContenth(word){
 }
 
 function addh(word){
-	listh.push(word);
-	curh++;
-	if(listh.length > maxh){
+	if(curh + 1 >= maxh){
+		if(word === listh[listh.length-1])
+			return;
 		listh.shift();
+		listh.push(word);
+	}else{
+		if(word === listh[curh])
+			return;
+		curh++;
+		listh[curh] = word;
+		listh = listh.slice(0, curh + 1);
 	}
+
 }
 function backh(){
 	if(curh <= 0){
@@ -316,7 +365,7 @@ function backh(){
 	return listh[curh];
 }
 function forwardh(){
-	if(curh == listh.length-1){
+	if(!listh[curh + 1] || curh == listh.length-1){
 		showinfo("already reached the last one!");
 		return;
 	}else{

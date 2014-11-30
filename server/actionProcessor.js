@@ -64,7 +64,8 @@ function add(data, req, res){
 	});
 }
 function fillWordlist(data, req, res){
-	db.find({}, {"name": 1, "createDate": 1}).sort({"createDate": -1}).exec(function(err, docs){
+	db.find({}, {"name": 1, "createDate": 1, "relations": 1})
+		.sort({"createDate": -1}).exec(function(err, docs){
 		if(err){
 			res.end(util.inspect({
 				errMsg: "an error occured when [find]."
@@ -103,6 +104,13 @@ function updateRelation(data, req, res){
 			console.log(err);
 		}
 		console.log("updateRelation: numplaced " + numplaced);
-		res.end(data.relations);
+		if(0 == numplaced){
+			add({
+				"name": data.name,
+				"relations": data.relations
+			}, req, res);
+		}else{
+			res.end(data.relations);
+		}
 	});
 }
