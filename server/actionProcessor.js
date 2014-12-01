@@ -46,7 +46,14 @@ function route(data, req, res){
 		case 'updateRelation':
 			updateRelation(data, req, res);
 			break;
+		case 'getTestQueue':
+			getTestQueue(data, req, res);
+			break;
+		case 'submitTesting':
+			submitTesting(data, req, res);
+			break;
 		default:
+			console.log("unsupport action: " + action);
 			res.end("unsupport action: " + action);
 	};
 }
@@ -113,4 +120,42 @@ function updateRelation(data, req, res){
 			res.end(data.relations);
 		}
 	});
+}
+
+function getTestQueue(data, req, res){
+	db.find({desc: {$exists: true}}, {"name": 1, "desc": 1})
+		.sort({ hp: 1 , fightCount: 1, lastFightDate: 1, createDate: 1})
+		.limit(30).exec(function (err, docs) { 
+			if(err){
+				res.end(util.inspect({
+					errMsg: "an error occured when [find]."
+				}));
+				console.log(err);
+			}
+			res.end(util.inspect(docs));
+		});
+}
+
+function submitTesting(data, req, res){
+	var i = 0, len = data.length,
+		one,
+		updatedCount = 0,
+		_callback = function(err, numReplaced){
+			updatedCount += numReplaced;
+			if(updatedCount >= len){
+				res.end(updatedCount);
+			}
+		};
+	for(; i < len; i++){
+		one = data[i];
+		db.update({name: one.name}, { 
+			$inc: { 
+				hp: (one.isRight ? 1 : -1),
+				fightCount: 1
+			},
+			$set: {
+				lastFightDate: today
+			}}, 
+			_callback);
+	}
 }

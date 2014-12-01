@@ -9,6 +9,7 @@ var btn_updateRelation = $("#btn_updateRelation");
 var handleArea = $('#handleArea');
 var wordname = $('#tx_name');
 var relations = $("#tx_relations");
+var txt_desc = $("#txt_desc");
 var btn_submit = $("#btn_submit");
 var btn_cancel = $("#btn_cancel");
 
@@ -58,6 +59,7 @@ btn_cancel.on("click", function(e){
 btn_submit.on("click", function(e){
 	var word = $.trim(wordname.val());
 	var relateword = relations.val();
+	var desc = txt_desc.val();
 	var action = handleArea.data("action");
 
 	if("add" == action){
@@ -90,7 +92,8 @@ btn_submit.on("click", function(e){
 
 		$.post("/action/add", {
 			"name": word,
-			"relations": relateword
+			"relations": relateword,
+			"desc": desc
 		}, function(result){
 			showinfo("Added Successfully!");
 			handleArea.css("display", "none");
@@ -137,7 +140,8 @@ $("body").keyup(function(eventObj){
 		if(eventObj.keyCode == 27){ // ESC
 			showHandleArea(false);
 		}else if(eventObj.keyCode == 13){ // Enter
-			btn_submit.trigger("click");
+			if("TEXTAREA" != eventObj.target.tagName)
+				btn_submit.trigger("click");
 		}
 		return;
 	}

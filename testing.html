@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<head>
+<meta charset="utf8"/>
+<script src="local/jquery-2.1.1.js"></script>
+<style>
+	table, tr, th, td{
+		border: 1px solid #888888;
+		border-collapse: collapse;
+	}
+	table{
+		width: 100%;
+	}
+	th, td{
+		padding: 2px 5px;
+	}
+	th{
+		text-align: center;
+	}
+	td.desc{
+		width: 70%;
+	}
+</style>
+</head>
+<body>
+	<div id="msgArea" style="display: none;margin-bottom: 10px;color: red;
+		background-color:yellow;text-align: center;"></div>
+	<section id="section_test">
+		<nav>
+			<button id="btn_prev">prev</button>
+			<button id="btn_next">next</button>
+			<button id="btn_submit">submit</button>
+		</nav>
+		<h1>
+			<span id="currentCount"></span>/<span id="totalCount"></span>
+		</h1>
+		<input type="text" id="txt_word"></input>
+		<article id="article_desc"></article>
+	</section>
+	<section id="section_showResult">
+		<nav>
+			<button id="btn_retest">retest the fails</button>
+			<a href="index.html">Home</a>
+		</nav>
+		<div id="rightInfo"></div>
+		<div id="wrongInfo">
+			<table>
+				<thead>
+					<tr>
+					<th>word</th>
+					<th>your answer</th>
+					<th>description</th>
+					</tr>
+				</thead>
+				<tbody id='table_wrongAnswers'></tbody>
+			</table>
+		</div>
+		
+	</section>
+	
+<script src="local/testing.js"></script>
+</body>
