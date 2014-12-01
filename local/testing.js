@@ -49,10 +49,17 @@ $(function(){
 	
 	btn_submit.on('click', function(){
 		storeTest();
+		// build the commit data
+		var i, len, commitData = {};
+		for(i = 0, len = testQueue.length; i < len; i++){
+			commitData[testQueue[i].name] = testQueue[i].isRight;
+		}
+		commitData.count = len;
+
 		// commit test result
-		$.post("/action/submitTesting", testQueue, function(result){
+		$.post("/action/submitTesting", commitData, function(result){
 			// show test result
-			var i, len, oneTest, strArr = [], desc;
+			var oneTest, strArr = [], desc;
 			errorQueue = [], errorIdx = -1;
 			for(i = 0, len = testQueue.length; i < len; i++){
 				oneTest = testQueue[i];

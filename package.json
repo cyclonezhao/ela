@@ -1,0 +1,18 @@
+{
+  "name": "ELA",
+  "version": "1.0.0",
+  "description": "English Learning APP",
+  "main": "index.js",
+  "dependencies": {
+    "nedb": "^0.11.1"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "no"
+  },
+  "keywords": [
+    "root"
+  ],
+  "author": "yi",
+  "license": "MIT"
+}

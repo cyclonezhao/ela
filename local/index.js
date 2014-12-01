@@ -5,6 +5,7 @@ var msgArea = $("#msgArea");
 var btn_add = $("#btn_add");
 var btn_search = $("#btn_search");
 var btn_updateRelation = $("#btn_updateRelation");
+var btn_updateDesc = $("#btn_updateDesc");
 
 var handleArea = $('#handleArea');
 var wordname = $('#tx_name');
@@ -41,6 +42,20 @@ btn_search.on("click", function(e){
 	showHandleArea(true, "search");
 	wordname.focus();
 });
+btn_updateDesc.on("click", function(e){
+	if(currentWord){
+		showHandleArea(true, "updateDesc");
+		wordname.attr("disabled", true);
+		relations.attr("disabled", true);
+		txt_desc.attr("disabled", false);
+		wordname.val(currentWord);
+		txt_desc.val(span_relations.data("desc"));
+		txt_desc.focus();
+	}else{
+		showinfo("Please select a word first!");
+	}
+
+}); 
 btn_updateRelation.on("click", function(e){
 	if(currentWord){
 		showHandleArea(true, "updateRelation");
@@ -115,7 +130,18 @@ btn_submit.on("click", function(e){
 			wordname.attr("disabled", false);
 			showHandleArea(false);
 			fillword();
-			fillRelation({"relations": relateword}, true);
+			fillRelation(relateword);
+		});	
+	} else if("updateDesc" == action){
+		var desc = txt_desc.val(),
+			word = wordname.val();
+		$.post("action/updateDesc", {
+			"name": word,
+			"desc": desc
+		}, function(){
+			showinfo("Updated Successfully!");
+			showHandleArea(false);
+			span_relations.data("desc", desc);
 		});	
 	} else if("search" === action){
 		fillContenth(word);
@@ -173,6 +199,7 @@ function add_click(){
 	wordname.val("");
 	relations.val("");
 	wordname.attr("disabled", false);
+	relations.attr("disabled", false);
 	showHandleArea(true, "add");
 }
 
@@ -189,7 +216,11 @@ function showHandleArea(isshow, action){
 }
 function disableNav(disable){
 	btn_add.attr("disabled", disable);
+	btn_updateDesc.attr("disabled", disable);
 	btn_updateRelation.attr("disabled", disable);
+	btn_back.attr("disabled", disable);
+	btn_forward.attr("disabled", disable);
+	btn_search.attr("disabled", disable);
 }
 
 
@@ -197,31 +228,18 @@ function fillContent(word){
 	currentWord = word;
 	frame_youdao.attr("src", "http://dict.youdao.com/search?le=eng&q=" + word);
 	// query and show relation words if it had
-	$.get("/action/getRelation", {"name": word}, function(result){
-		fillRelation(result);
+	$.get("/action/getRelationAndDesc", {"name": word}, function(result){
+		result = eval('(' + result + ')');
+		fillRelation(result[0].relations);
+		span_relations.data("desc", result[0].desc || "");
 	});
 	showHandleArea(false);
 }
 
 
-function fillRelation(result, noteval){
-	var notnull = true;
-	if(result) {
-		if(!noteval)
-			result = eval('(' + result + ')');
-		if((result instanceof Array) && result.length
-				&& (result[0].relations || result[0].relations == "")){
-			result = result[0].relations
-		}else if(!(result instanceof Array) && result.relations){
-			result = result.relations;
-		}else{
-			notnull = false;
-		}
-	}else{
-		notnull = false;
-	}
-	span_relations.data("relations", result);
-	if(!notnull) {
+function fillRelation(result){
+	span_relations.data("relations", result || "");
+	if(!result) {
 		span_relations.html("");
 		return;
 	}

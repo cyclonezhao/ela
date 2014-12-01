@@ -40,11 +40,14 @@ function route(data, req, res){
 		case 'fillWordlist':
 			fillWordlist(data, req, res);
 			break;
-		case 'getRelation':
-			getRelation(data, req, res);
+		case 'getRelationAndDesc':
+			getRelationAndDesc(data, req, res);
 			break;
 		case 'updateRelation':
 			updateRelation(data, req, res);
+			break;
+		case 'updateDesc':
+			updateDesc(data, req, res);
 			break;
 		case 'getTestQueue':
 			getTestQueue(data, req, res);
@@ -92,8 +95,8 @@ function fillWordlist(data, req, res){
 		res.end(util.inspect(docs));
 	});
 }
-function getRelation(data, req, res){
-	db.find({"name": data.name}, {"relations": 1, "_id": 0}, function(err, docs){
+function getRelationAndDesc(data, req, res){
+	db.find({"name": data.name}, {"relations": 1, "desc": 1, "_id": 0}, function(err, docs){
 		if(err){
 			res.end(util.inspect({
 				errMsg: "an error occured when [find]."
@@ -137,20 +140,18 @@ function getTestQueue(data, req, res){
 }
 
 function submitTesting(data, req, res){
-	var i = 0, len = data.length,
-		one,
-		updatedCount = 0,
-		_callback = function(err, numReplaced){
+	var updatedCount = 0, _callback = function(err, numReplaced){
 			updatedCount += numReplaced;
-			if(updatedCount >= len){
-				res.end(updatedCount);
+			if(updatedCount >= data.count){
+				res.end(updatedCount + '');
 			}
 		};
-	for(; i < len; i++){
-		one = data[i];
-		db.update({name: one.name}, { 
+	debugger;
+	for(var word in data){
+		if(word == 'count') continue;
+		db.update({name: word}, { 
 			$inc: { 
-				hp: (one.isRight ? 1 : -1),
+				hp: (data[word] == 'true' ? 1 : -1),
 				fightCount: 1
 			},
 			$set: {
@@ -158,4 +159,13 @@ function submitTesting(data, req, res){
 			}}, 
 			_callback);
 	}
+}
+
+function updateDesc(data, req, res){
+	db.update({name: data.name}, {$set: {"desc": data.desc}}, function(err, num){
+		if(err){
+			console.log(err);
+		}
+		res.end(num + '');
+	});
 }
