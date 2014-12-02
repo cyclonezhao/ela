@@ -20,20 +20,25 @@
 	</div>
 
 	<nav>
-		<button id="btn_add">add</button>
-		<button id="btn_search">search</button>
-		<button id="btn_updateDesc">update description</button>
-		<button id="btn_updateRelation">update relation words</button>
-		<button id="back">back</button>
-		<button id="forward">forward</button>
-		<a href="testing.html">testing</a>
+		<span id="span_btns">
+			<button id="btn_add">add</button>
+			<button id="btn_search">search</button>
+			<button id="btn_updateDesc">update description</button>
+			<button id="btn_updateRelation">update relation words</button>
+			<button id="back">back</button>
+			<button id="forward">forward</button>
+			<a href="testing.html">testing</a>
+		</span>
+		<label id="label_action" style="display:none;"></label>
 	</nav>
 	<div id="handleArea">
 		<label for="tx_name">name:</label>
 		<input id="tx_name" type="text"/>
 		<label for="tx_relations">relations:</label>
-		<input type="text" id="tx_relations"></input>
-		<textarea id="txt_desc"></textarea>
+		<input type="text" id="tx_relations" style="width:400px;"></input>
+		<p/>
+		<label for="txt_desc">descriptions:</label>
+		<textarea id="txt_desc" style="margin: 0px; width: 605px; height: 100px;"></textarea>
 		<button id="btn_submit">submit</button>
 		<button id="btn_cancel">cancel</button>
 	</div>

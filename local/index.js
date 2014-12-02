@@ -6,50 +6,51 @@ var btn_add = $("#btn_add");
 var btn_search = $("#btn_search");
 var btn_updateRelation = $("#btn_updateRelation");
 var btn_updateDesc = $("#btn_updateDesc");
+// history
+var listh = [], maxh = 10, curh = -1;
+var btn_back = $("#back"), btn_forward = $("#forward");
 
 var handleArea = $('#handleArea');
-var wordname = $('#tx_name');
-var relations = $("#tx_relations");
+var txt_word = $('#tx_name');
+var txt_relations = $("#tx_relations");
 var txt_desc = $("#txt_desc");
+var inputs = [txt_word, txt_relations, txt_desc];
+
 var btn_submit = $("#btn_submit");
 var btn_cancel = $("#btn_cancel");
 
-var wordlist = $('#wordlist');
-var wordtree = $('#wordtree');
-var span_wordcount = $('#wordcount');
+var span_btns = $("#span_btns");
+var label_action = $("#label_action");
 
-var _showWordlist = false;
+var tree;
+var span_wordcount = $('#wordcount');
 
 var frame_youdao = $('#frame');
 var span_relations = $('#relationWords');
 
-var listh = [], maxh = 10, curh = -1;
-var btn_back = $("#back"), btn_forward = $("#forward");
-
-var currentWord;
+// global data
+var currentWord, currentRelations, currentDesc;
 var pauseKeyListen = false;
 
-var tree, list; 
+
 
 btn_add.on("click", function(e){
-	add_click();
+	txt_word.val("");
+	txt_word.focus();
+	txt_relations.val("");
+	showHandleArea(true, "add");
 });
 btn_search.on("click", function(e){
-	wordname.val("");
-	relations.val("");
-	wordname.attr("disabled", false);
-	relations.attr("disabled", true);
+	txt_word.val("");
+	txt_relations.val("");
 	showHandleArea(true, "search");
-	wordname.focus();
+	txt_word.focus();
 });
 btn_updateDesc.on("click", function(e){
 	if(currentWord){
 		showHandleArea(true, "updateDesc");
-		wordname.attr("disabled", true);
-		relations.attr("disabled", true);
-		txt_desc.attr("disabled", false);
-		wordname.val(currentWord);
-		txt_desc.val(span_relations.data("desc"));
+		txt_word.val(currentWord);
+		txt_desc.val(currentDesc);
 		txt_desc.focus();
 	}else{
 		showinfo("Please select a word first!");
@@ -59,11 +60,9 @@ btn_updateDesc.on("click", function(e){
 btn_updateRelation.on("click", function(e){
 	if(currentWord){
 		showHandleArea(true, "updateRelation");
-		wordname.attr("disabled", true);
-		relations.attr("disabled", false);
-		wordname.val(currentWord);
-		relations.val(span_relations.data("relations"));
-		relations.focus();
+		txt_word.val(currentWord);
+		txt_relations.val(currentRelations);
+		txt_relations.focus();
 	}else{
 		showinfo("Please select a word first!");
 	}
@@ -72,32 +71,16 @@ btn_cancel.on("click", function(e){
 	showHandleArea(false);
 });
 btn_submit.on("click", function(e){
-	var word = $.trim(wordname.val());
-	var relateword = relations.val();
+	var word = $.trim(txt_word.val());
+	var relateword = txt_relations.val();
 	var desc = txt_desc.val();
 	var action = handleArea.data("action");
-
+	if(!word){
+		showinfo("Word must be entered!");
+		return;
+	}
 	if("add" == action){
-		if(!word){
-			showinfo("Word must be entered!");
-			return;
-		}
-
-		var exist = false;
-		if(_showWordlist){
-			var list = wordlist.children("a");
-			for(var i=0, len=list.length; i<len; i++){
-				if(word == list[i].innerHTML){
-				exist = true;
-				break;
-			}
-		}
-		}else{
-			if(tree.getNodeByParam("name", word)){
-				exist = true;
-			}
-		}
-		if(exist){
+		if(tree.getNodeByParam("name", word)){
 			showinfo("the word [" + word + "] was already existed!");
 			return;
 		}
@@ -112,7 +95,7 @@ btn_submit.on("click", function(e){
 		}, function(result){
 			showinfo("Added Successfully!");
 			handleArea.css("display", "none");
-			disableNav(false);
+			showHandleArea(false);
 			fillword();
 			fillContenth(word);
 		});	
@@ -127,23 +110,24 @@ btn_submit.on("click", function(e){
 			"relations": relateword
 		}, function(result){
 			showinfo("Updated Successfully!");
-			wordname.attr("disabled", false);
+			txt_word.attr("disabled", false);
 			showHandleArea(false);
 			fillword();
 			fillRelation(relateword);
 		});	
 	} else if("updateDesc" == action){
 		var desc = txt_desc.val(),
-			word = wordname.val();
+			word = txt_word.val();
 		$.post("action/updateDesc", {
 			"name": word,
 			"desc": desc
 		}, function(){
 			showinfo("Updated Successfully!");
 			showHandleArea(false);
-			span_relations.data("desc", desc);
+			currentDesc = desc;
 		});	
 	} else if("search" === action){
+		showHandleArea(false);
 		fillContenth(word);
 	}
 	
@@ -179,8 +163,7 @@ $("body").keyup(function(eventObj){
 			btn_forward.trigger("click");
 			break;
 		case 65: // A
-			add_click();
-			wordname.focus();
+			btn_add.trigger('click');
 			break;
 		case 83: // S
 			btn_search.trigger("click");
@@ -195,35 +178,32 @@ frame_youdao.on('load', function(){
 	btn_add.focus();
 });
 
-function add_click(){
-	wordname.val("");
-	relations.val("");
-	wordname.attr("disabled", false);
-	relations.attr("disabled", false);
-	showHandleArea(true, "add");
-}
-
 function showHandleArea(isshow, action){
 	if(isshow){
 		pauseKeyListen = true;
 		handleArea.css("display", "block");
 		handleArea.data("action", action);
+		span_btns.css("display", "none");
+		label_action.css("display", "inline");
+		label_action.html("Operation: "+action);
+		
+		// set editable of input widgets for action
+		// var inputs = [txt_word, txt_relations, txt_desc];
+		var disableIdx, disable;
+		if(action == 'search') disableIdx = [1,2];
+		if(action == 'updateRelation') disableIdx = [0,2];
+		if(action == 'updateDesc') disableIdx = [0,1];
+		for(var i=0, len=inputs.length; i<len; i++){
+			disable = $.inArray(i, disableIdx) >= 0;
+			inputs[i].attr("disabled", disable);
+		}
 	}else{
 		pauseKeyListen = false;
 		handleArea.css("display", "none");
+		span_btns.css("display", "inline");
+		label_action.css("display", "none");
 	}
-	disableNav(isshow);
 }
-function disableNav(disable){
-	btn_add.attr("disabled", disable);
-	btn_updateDesc.attr("disabled", disable);
-	btn_updateRelation.attr("disabled", disable);
-	btn_back.attr("disabled", disable);
-	btn_forward.attr("disabled", disable);
-	btn_search.attr("disabled", disable);
-}
-
-
 function fillContent(word){
 	currentWord = word;
 	frame_youdao.attr("src", "http://dict.youdao.com/search?le=eng&q=" + word);
@@ -231,14 +211,13 @@ function fillContent(word){
 	$.get("/action/getRelationAndDesc", {"name": word}, function(result){
 		result = eval('(' + result + ')');
 		fillRelation(result[0].relations);
-		span_relations.data("desc", result[0].desc || "");
+		currentRelations = result[0].relations;
+		currentDesc = result[0].desc;
 	});
-	showHandleArea(false);
 }
 
 
 function fillRelation(result){
-	span_relations.data("relations", result || "");
 	if(!result) {
 		span_relations.html("");
 		return;
@@ -256,26 +235,9 @@ function fillword(init){
 		result = eval('(' + result + ')');
 		//result = eval("var json='"+result+"';");
 		if(result instanceof Array){
-			if(init){
-				fillWordlist(result)
-				fillWordtree(result)
-			}else if(_showWordlist){
-				fillWordlist(result)
-			}else{
-				fillWordtree(result)
-			}
-			
+			fillWordtree(result)
 		}
 	});
-}
-
-function fillWordlist(result){
-	var html = [], jsStr;
-	for(var i = 0, len = result.length; i < len; i++){
-		html.push(_genAnchor(result[i].name), "<br>");
-	}
-	html = html.join("");
-	wordlist.html(html);
 }
 
 // generate word anchor which can query contents and relations of the word
@@ -342,12 +304,6 @@ function fillWordtree(result){
 		"词汇数量：", wordcount,
 		"；相关词数量：", relationCount
 	].join(""));
-}
-
-function dochangeview(isShowlist){
-	_showWordlist = isShowlist;
-	wordlist.css("display", isShowlist ? "inline-block": "none");
-	wordtree.css("display", isShowlist ? "none": "inline-block");
 }
 
 function clicktree(event, treeId, treeNode, clickFlag){
