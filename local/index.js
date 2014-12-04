@@ -281,7 +281,6 @@ function fillWordtree(result){
 			},
 			removeHoverDom: function(treeId, treeNode){
 				if(treeNode.level != 1) return;
-				if(!treeNode.desc) return;
 				dom_descShow.css("display", "none");
 			}
 		}
