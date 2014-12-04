@@ -18,7 +18,7 @@ $(function(){
 		table_wrongAnswers = $('#table_wrongAnswers');
 		btn_retest = $('#btn_retest');
 		
-	var testQueue, errorQueue,
+	var testQueue, errorQueue, retest,
 		totalCount, currentIndex = 0;
 		
 	section_showResult.css('display', 'none');
@@ -49,15 +49,24 @@ $(function(){
 	
 	btn_submit.on('click', function(){
 		storeTest();
-		// build the commit data
-		var i, len, commitData = {};
-		for(i = 0, len = testQueue.length; i < len; i++){
-			commitData[testQueue[i].name] = testQueue[i].isRight;
-		}
-		commitData.count = len;
+		
+		if(retest){
+			showTestResult();
+		}else{
+			// build the commit data
+			var i, len, commitData = {};
+			for(i = 0, len = testQueue.length; i < len; i++){
+				commitData[testQueue[i].name] = testQueue[i].isRight;
+			}
+			commitData.count = len;
 
-		// commit test result
-		$.post("/action/submitTesting", commitData, function(result){
+			// commit test result
+			$.post("/action/submitTesting", commitData, function(result){
+				showTestResult();
+				retest = true;
+			});
+		}
+		function showTestResult(){
 			// show test result
 			var oneTest, strArr = [], desc;
 			errorQueue = [], errorIdx = -1;
@@ -112,7 +121,7 @@ $(function(){
 			}
 			section_showResult.css('display', 'block');
 			section_test.css('display', 'none');
-		});
+		}
 		
 		function _getTarget(e, tagName){
 			var target = e.target;
@@ -148,26 +157,53 @@ $(function(){
 		}
 		
 		currentIndex = queueIndex;
-		txt_word.val("");
-		txt_word.focus();
-
-		span_currentCount.html(queueIndex + 1);
 		var currentTest = testQueue[queueIndex],
 			desc = currentTest.desc.split("\n");
-		article_desc.html(getDescHtml(desc));
+		article_desc.html(getDescHtml(desc, true));
+		span_currentCount.html(queueIndex + 1);
+		txt_word.val(currentTest.answer || "");
+		txt_word.focus();
 	}
 	
-	function getDescHtml(desc){
-		var strArr, i, len;
-		strArr = ["<ul>"];
+	function getDescHtml(desc, isShowRandomOne){
+		var strArr, i, len, j, len_j, one;
+		var structDesc = [], definition;
 		for(i = 0, len = desc.length; i < len; i++){
-			if(!desc[i]) continue;
-			strArr.push("<li>");
-			strArr.push(desc[i]);
-			strArr.push("</li>");
+			one = desc[i];
+			if(!one) continue;
+			if(one.trim().indexOf("e.g.") == 0){
+				definition.eg.push(one);
+			}else{
+				definition = {};
+				definition.def = one;
+				definition.eg = [];
+				structDesc.push(definition);
+			}
 		}
-		strArr.push("</ul>");
-		return strArr.join("");
+		
+		if(isShowRandomOne){
+			var seed = Math.floor(Math.random() * structDesc.length);
+			return _html([structDesc[seed]]);
+		}else{
+			return _html(structDesc);
+		}
+		
+		function _html(arg){
+			strArr = ["<ul>"];
+			for(i = 0, len = arg.length; i < len; i++){
+				if(!arg[i]) continue;
+				one = arg[i];
+				strArr.push("<li>");
+				strArr.push(one.def);
+				for(j = 0, len_j = one.eg.length; j < len_j; j++){
+					strArr.push("</br>");
+					strArr.push(one.eg[j]);
+				}
+				strArr.push("</li>");
+			}
+			strArr.push("</ul>");
+			return strArr.join("");
+		}
 	}
 	
 	function storeTest(){

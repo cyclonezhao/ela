@@ -63,6 +63,7 @@ function route(data, req, res){
 
 function add(data, req, res){
 	data.createDate = today;
+	data.hp = 100;
 	db.insert(data, function(err, doc){
 		if(err){
 			res.end(util.inspect({
@@ -74,7 +75,7 @@ function add(data, req, res){
 	});
 }
 function fillWordlist(data, req, res){
-	db.find({}, {"name": 1, "createDate": 1, "relations": 1})
+	db.find({}, {"name": 1, "createDate": 1, "relations": 1, "desc": 1})
 		.sort({"createDate": -1}).exec(function(err, docs){
 		if(err){
 			res.end(util.inspect({
@@ -126,7 +127,7 @@ function updateRelation(data, req, res){
 }
 
 function getTestQueue(data, req, res){
-	db.find({desc: {$exists: true}}, {"name": 1, "desc": 1})
+	db.find({$where: function(){return !!(this.desc);}}, {"name": 1, "desc": 1})
 		.sort({ hp: 1 , fightCount: 1, lastFightDate: 1, createDate: 1})
 		.limit(30).exec(function (err, docs) { 
 			if(err){

@@ -24,6 +24,7 @@ var label_action = $("#label_action");
 
 var tree;
 var span_wordcount = $('#wordcount');
+var dom_descShow = $('#descShow');
 
 var frame_youdao = $('#frame');
 var span_relations = $('#relationWords');
@@ -35,10 +36,11 @@ var pauseKeyListen = false;
 
 
 btn_add.on("click", function(e){
+	showHandleArea(true, "add");
 	txt_word.val("");
 	txt_word.focus();
-	txt_relations.val("");
-	showHandleArea(true, "add");
+	txt_relations
+	txt_desc.val("");
 });
 btn_search.on("click", function(e){
 	txt_word.val("");
@@ -79,9 +81,15 @@ btn_submit.on("click", function(e){
 		showinfo("Word must be entered!");
 		return;
 	}
+	
+	var reg = new RegExp(word, 'g');
+	desc = desc.replace(reg, "___");
+	
 	if("add" == action){
-		if(tree.getNodeByParam("name", word)){
-			showinfo("the word [" + word + "] was already existed!");
+		var node = tree.getNodeByParam("name", word);
+		if(node){
+			showinfo("the word [" + word + "] was already existed!"
+				+" created on " + node.pId);
 			return;
 		}
 		if(relateword){
@@ -116,8 +124,6 @@ btn_submit.on("click", function(e){
 			fillRelation(relateword);
 		});	
 	} else if("updateDesc" == action){
-		var desc = txt_desc.val(),
-			word = txt_word.val();
 		$.post("action/updateDesc", {
 			"name": word,
 			"desc": desc
@@ -264,6 +270,20 @@ function fillWordtree(result){
 		},
 		callback: {
 			onClick: clicktree
+		},
+		view: {
+			addHoverDom: function(treeId, treeNode){
+				if(treeNode.level != 1) return;
+				if(!treeNode.desc) return;
+				
+				dom_descShow.html(treeNode.desc.replace(/\n/g, "</br>"));
+				dom_descShow.css("display", "inline-block");
+			},
+			removeHoverDom: function(treeId, treeNode){
+				if(treeNode.level != 1) return;
+				if(!treeNode.desc) return;
+				dom_descShow.css("display", "none");
+			}
 		}
 	};
 	var zNodes = [], one, relation, date;
@@ -282,7 +302,8 @@ function fillWordtree(result){
 		zNodes.push({
 			id: one._id,
 			pId: date,
-			name: one.name
+			name: one.name,
+			desc: one.desc
 		});
 		wordcount++;
 		if(one.relations){
