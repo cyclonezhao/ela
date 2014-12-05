@@ -14,8 +14,8 @@ $(function(){
 		section_showResult = $("#section_showResult"),
 		
 		div_rightInfo = $('#rightInfo');
-		div_wrongInfo = $('#wrongInfo');
-		table_wrongAnswers = $('#table_wrongAnswers');
+		div_wordInfo = $('#wordInfo');
+		table_wordInfo = $('#table_wordInfo');
 		btn_retest = $('#btn_retest');
 		
 	var testQueue, errorQueue, retest,
@@ -36,6 +36,10 @@ $(function(){
 		showTest(0);
 		section_showResult.css('display', 'none');
 		section_test.css('display', 'block');
+	});
+	
+	btn_showWordInfo.on('click', function(){
+		div_wordInfo.css('display', 'block');
 	});
 	
 	btn_prev.on('click', function(){
@@ -96,29 +100,33 @@ $(function(){
 			
 			if(errorQueue.length == 0){
 				div_rightInfo.css('display', 'block');
-				div_wrongInfo.css('display', 'none');
+				div_wordInfo.css('display', 'none');
+				btn_retest.css('display', 'none');
+				btn_showWordInfo.css('display', 'inline-block');
 				div_rightInfo.html("<h1>Congratulation, Test Passed!</h1>");
 			}else{
+				btn_showWordInfo.css('display', 'none');
+				btn_retest.css('display', 'inline-block');
 				div_rightInfo.css('display', 'none');
-				div_wrongInfo.css('display', 'block');
-				table_wrongAnswers.html(strArr.join(""));
-				table_wrongAnswers.off('click');
-				table_wrongAnswers.on('click', function(e){
-					var tr_error = $(_getTarget(e, "tr")),
-						errorIdx = parseInt(tr_error.attr('errorIdx')),
-						expanded = tr_error.data("expanded"),
-						td_desc = tr_error.find("td:last-child");
-					if(!expanded){
-						desc = errorQueue[errorIdx].desc.split("\n");
-						td_desc.html(getDescHtml(desc));
-						tr_error.data("expanded", true);
-					}else{
-						td_desc.html(_shortDesc(errorQueue[errorIdx].desc));
-						tr_error.data("expanded", false);
-					}
-						
-				});
+				div_wordInfo.css('display', 'block');
 			}
+			table_wordInfo.html(strArr.join(""));
+			table_wordInfo.off('click');
+			table_wordInfo.on('click', function(e){
+				var tr_error = $(_getTarget(e, "tr")),
+					errorIdx = parseInt(tr_error.attr('errorIdx')),
+					expanded = tr_error.data("expanded"),
+					td_desc = tr_error.find("td:last-child");
+				if(!expanded){
+					desc = errorQueue[errorIdx].desc.split("\n");
+					td_desc.html(getDescHtml(desc));
+					tr_error.data("expanded", true);
+				}else{
+					td_desc.html(_shortDesc(errorQueue[errorIdx].desc));
+					tr_error.data("expanded", false);
+				}
+					
+			});
 			section_showResult.css('display', 'block');
 			section_test.css('display', 'none');
 		}
@@ -182,6 +190,10 @@ $(function(){
 		}
 		
 		if(isShowRandomOne){
+			if(structDesc[structDesc.length - 1].trim().toLowerCase()
+				.indexOf("to know more")){
+					structDesc.pop();
+			}
 			var seed = Math.floor(Math.random() * structDesc.length);
 			return _html([structDesc[seed]]);
 		}else{

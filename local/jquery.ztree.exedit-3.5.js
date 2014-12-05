@@ -266,7 +266,7 @@
 		onHoverOutNode: function(event, node) {
 			var setting = data.getSetting(event.data.treeId),
 			root = data.getRoot(setting);
-			if (root.curHoverNode && !data.isSelectedNode(setting, root.curHoverNode)) {
+			if (root.curHoverNode) {
 				view.removeTreeDom(setting, root.curHoverNode);
 				root.curHoverNode = null;
 			}

@@ -82,12 +82,12 @@ btn_submit.on("click", function(e){
 		return;
 	}
 	
-	var reg = new RegExp(word, 'g');
+	var reg = new RegExp(word, 'gi');
 	desc = desc.replace(reg, "___");
 	
 	if("add" == action){
 		var node = tree.getNodeByParam("name", word);
-		if(node){
+		if(node && node.level == 1){
 			showinfo("the word [" + word + "] was already existed!"
 				+" created on " + node.pId);
 			return;
@@ -105,7 +105,8 @@ btn_submit.on("click", function(e){
 			handleArea.css("display", "none");
 			showHandleArea(false);
 			fillword();
-			fillContenth(word);
+			if(word != currentWord)
+				fillContenth(word);
 		});	
 	} else if ("updateRelation" == action){
 
@@ -216,9 +217,10 @@ function fillContent(word){
 	// query and show relation words if it had
 	$.get("/action/getRelationAndDesc", {"name": word}, function(result){
 		result = eval('(' + result + ')');
-		fillRelation(result[0].relations);
-		currentRelations = result[0].relations;
-		currentDesc = result[0].desc;
+		var empty = !result || !result[0];
+		fillRelation(empty ? null : result[0].relations);
+		currentRelations = empty ? null : result[0].relations;
+		currentDesc = empty ? null : result[0].desc;
 	});
 }
 
@@ -324,6 +326,16 @@ function fillWordtree(result){
 		"词汇数量：", wordcount,
 		"；相关词数量：", relationCount
 	].join(""));
+	
+	/*var dom_tree = $("#tree");
+	dom_tree.on('mouseenter', function(e){
+		dom_tree.on('mousemove', _mousemove);
+	}).on('mouseleave', function(e){
+		dom_tree.off('mousemove', _mousemove);
+	});
+	function _mousemove(e){
+		
+	}*/
 }
 
 function clicktree(event, treeId, treeNode, clickFlag){

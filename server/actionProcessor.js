@@ -129,7 +129,7 @@ function updateRelation(data, req, res){
 function getTestQueue(data, req, res){
 	db.find({$where: function(){return !!(this.desc);}}, {"name": 1, "desc": 1})
 		.sort({ hp: 1 , fightCount: 1, lastFightDate: 1, createDate: 1})
-		.limit(30).exec(function (err, docs) { 
+		.limit(20).exec(function (err, docs) { 
 			if(err){
 				res.end(util.inspect({
 					errMsg: "an error occured when [find]."
