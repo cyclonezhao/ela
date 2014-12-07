@@ -4,6 +4,7 @@ $(function(){
 		btn_prev = $('#btn_prev'),
 		btn_next = $('#btn_next'),
 		btn_submit = $('#btn_submit'),
+		btn_showWordInfo = $('#btn_showWordInfo'),
 		
 		msgArea = $('#msgArea'),
 		
@@ -190,8 +191,8 @@ $(function(){
 		}
 		
 		if(isShowRandomOne){
-			if(structDesc[structDesc.length - 1].trim().toLowerCase()
-				.indexOf("to know more")){
+			if(structDesc[structDesc.length - 1].def.trim().toLowerCase()
+				.indexOf("to know more") == 0){
 					structDesc.pop();
 			}
 			var seed = Math.floor(Math.random() * structDesc.length);
