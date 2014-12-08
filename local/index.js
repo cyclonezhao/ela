@@ -26,7 +26,7 @@ var tree;
 var span_wordcount = $('#wordcount');
 var dom_descShow = $('#descShow');
 
-var frame_youdao = $('#frame');
+var frame_othersite = $('#frame');
 var span_relations = $('#relationWords');
 
 // global data
@@ -181,7 +181,7 @@ $("body").keyup(function(eventObj){
 fillword(true);
 window.fillContenth = fillContenth;
 
-frame_youdao.on('load', function(){
+frame_othersite.on('load', function(){
 	btn_add.focus();
 });
 
@@ -213,7 +213,9 @@ function showHandleArea(isshow, action){
 }
 function fillContent(word){
 	currentWord = word;
-	frame_youdao.attr("src", "http://dict.youdao.com/search?le=eng&q=" + word);
+	var youdao_src = "http://dict.youdao.com/search?le=eng&q=" + word;
+	var collins_src = "http://www.collinsdictionary.com/dictionary/american/" + word + "?showCookiePolicy=true";
+	frame_othersite.attr("src", collins_src);
 	// query and show relation words if it had
 	$.get("/action/getRelationAndDesc", {"name": word}, function(result){
 		result = eval('(' + result + ')');
