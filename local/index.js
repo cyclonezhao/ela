@@ -39,7 +39,7 @@ btn_add.on("click", function(e){
 	showHandleArea(true, "add");
 	txt_word.val("");
 	txt_word.focus();
-	txt_relations
+	txt_relations.val("");
 	txt_desc.val("");
 });
 btn_search.on("click", function(e){
@@ -215,7 +215,7 @@ function fillContent(word){
 	currentWord = word;
 	var youdao_src = "http://dict.youdao.com/search?le=eng&q=" + word;
 	var collins_src = "http://www.collinsdictionary.com/dictionary/american/" + word + "?showCookiePolicy=true";
-	frame_othersite.attr("src", collins_src);
+	frame_othersite.attr("src", youdao_src);
 	// query and show relation words if it had
 	$.get("/action/getRelationAndDesc", {"name": word}, function(result){
 		result = eval('(' + result + ')');
